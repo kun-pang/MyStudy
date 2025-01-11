@@ -1,0 +1,53 @@
+﻿生成启动时间为 2023/8/2 10:22:11。
+     1>项目“D:\c++\vs\c++day\c++day\c++day.vcxproj”在节点 2 上(build 个目标)。
+     1>InitializeBuildStatus:
+         正在创建“Debug\c++基础知识.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt day1.cpp day11.cpp
+         day11.cpp
+     1>d:\c++\vs\c++day\c++day\day11.cpp(158): warning C4172: 返回局部变量或临时变量的地址
+         day1.cpp
+     1>d:\c++\vs\c++day\c++day\day1.cpp(49): warning C4305: “初始化”: 从“double”到“float”截断
+         正在生成代码...
+       Link:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\c++\vs\c++day\Debug\c++基础知识.exe" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\c++基础知识.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\c++\vs\c++day\Debug\c++基础知识.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\c++\vs\c++day\Debug\c++基础知识.lib" /MACHINE:X86 Debug\day1.obj
+         Debug\day10.obj
+         Debug\day11.obj
+         "Debug\day12-text1.obj"
+         "Debug\day12-text2.obj"
+         "Debug\day12-text3-circle.obj"
+         "Debug\day12-text3-point.obj"
+         "Debug\day12-text3.obj"
+         Debug\day12.obj
+         "Debug\day2-text.obj"
+         Debug\day2.obj
+         "Debug\day3-text.obj"
+         Debug\day3.obj
+         "Debug\day4-text.obj"
+         "Debug\day4-text1.obj"
+         Debug\day4.obj
+         "Debug\day5-1.obj"
+         "Debug\day5-text.obj"
+         Debug\day5.obj
+         "Debug\day6-text1.obj"
+         "Debug\day6-text2.obj"
+         Debug\day6.obj
+         "Debug\day7-text.obj"
+         Debug\day7.obj
+         "Debug\day8-text.obj"
+         Debug\day8.obj
+         "Debug\day9-text1.obj"
+         "Debug\day9-text2.obj"
+         Debug\day9.obj
+         Debug\swap_1.obj
+         c++day.vcxproj -> D:\c++\vs\c++day\Debug\c++基础知识.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\c++\vs\c++day\Debug\c++基础知识.exe;#1" /manifest "Debug\c++基础知识.exe.intermediate.manifest"
+       FinalizeBuildStatus:
+         正在删除文件“Debug\c++基础知识.unsuccessfulbuild”。
+         正在对“Debug\c++基础知识.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“D:\c++\vs\c++day\c++day\c++day.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:01.00

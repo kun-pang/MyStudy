@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="day1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day2-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day3-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day4.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day4-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day4-text1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day5.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day5-1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day5-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day6.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day6-text1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day6-text2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day7.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day7-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="swap_1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day8.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day8-text.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day9.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day9-text1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day9-text2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day10.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day11.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12-text1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12-text2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12-text3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12-text3-point.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="day12-text3-circle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="day_8.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="day12-text3-point.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="day12-text3-circle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

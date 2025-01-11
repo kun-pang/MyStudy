@@ -1,0 +1,61 @@
+﻿生成启动时间为 2023/7/24 14:14:48。
+     1>项目“D:\c++\vs\c++day\c++day\c++day.vcxproj”在节点 2 上(build 个目标)。
+     1>PrepareForBuild:
+         正在创建目录“D:\c++\vs\c++day\x64\Debug\”。
+       InitializeBuildStatus:
+         正在创建“x64\Debug\c++day.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc100.pdb" /Gd /TP /errorReport:prompt day1.cpp "day2-text.cpp" day2.cpp "day3-text.cpp" day3.cpp "day4-text.cpp" "day4-text1.cpp" day4.cpp "day5-1.cpp" "day5-text.cpp" day5.cpp "day6-text1.cpp" "day6-text2.cpp" day6.cpp "day7-text.cpp" day7.cpp day8.cpp swap_1.cpp
+         swap_1.cpp
+         day8.cpp
+         day7.cpp
+         day7-text.cpp
+         day6.cpp
+         day6-text2.cpp
+         day6-text1.cpp
+         day5.cpp
+         day5-text.cpp
+         day5-1.cpp
+         day4.cpp
+         day4-text1.cpp
+         day4-text.cpp
+         day3.cpp
+         day3-text.cpp
+     1>day3-text.cpp(22): warning C4244: “参数”: 从“time_t”转换到“unsigned int”，可能丢失数据
+     1>day3-text.cpp(44): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+     1>day3-text.cpp(50): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+         day2.cpp
+         day2-text.cpp
+         day1.cpp
+     1>day1.cpp(49): warning C4305: “初始化”: 从“double”到“float”截断
+         Generating Code...
+       Link:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\c++\vs\c++day\x64\Debug\c++day.exe" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Debug\c++day.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\c++\vs\c++day\x64\Debug\c++day.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\c++\vs\c++day\x64\Debug\c++day.lib" /MACHINE:X64 x64\Debug\day1.obj
+         "x64\Debug\day2-text.obj"
+         x64\Debug\day2.obj
+         "x64\Debug\day3-text.obj"
+         x64\Debug\day3.obj
+         "x64\Debug\day4-text.obj"
+         "x64\Debug\day4-text1.obj"
+         x64\Debug\day4.obj
+         "x64\Debug\day5-1.obj"
+         "x64\Debug\day5-text.obj"
+         x64\Debug\day5.obj
+         "x64\Debug\day6-text1.obj"
+         "x64\Debug\day6-text2.obj"
+         x64\Debug\day6.obj
+         "x64\Debug\day7-text.obj"
+         x64\Debug\day7.obj
+         x64\Debug\day8.obj
+         x64\Debug\swap_1.obj
+         c++day.vcxproj -> D:\c++\vs\c++day\x64\Debug\c++day.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\c++\vs\c++day\x64\Debug\c++day.exe;#1" /manifest x64\Debug\c++day.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         正在删除文件“x64\Debug\c++day.unsuccessfulbuild”。
+         正在对“x64\Debug\c++day.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“D:\c++\vs\c++day\c++day\c++day.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:03.85
