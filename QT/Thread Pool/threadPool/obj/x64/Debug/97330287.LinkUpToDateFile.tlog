@@ -1,0 +1,1 @@
+cd /home/siguyuan/projects/threadPool/; g++ -o "/home/siguyuan/projects/threadPool/bin/x64/Debug/threadPool.out" -Wl,--no-undefined -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack /home/siguyuan/projects/threadPool/obj/x64/Debug/main.o /home/siguyuan/projects/threadPool/obj/x64/Debug/threadpool.o -lpthread

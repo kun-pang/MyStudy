@@ -1,0 +1,25 @@
+// 线程池相关注释
+
+// 创建线程池并且初始化
+ThreadPool(int minNum, int maxNum);
+
+// 销毁线程池
+~ThreadPool();
+
+// 给线程池添加任务
+void addTasks(callback<T0> func, T0* arg);
+
+// 获取线程池中工作线程数量
+int getBusyNum();
+
+// 获取线程池中存活线程数量
+int getAlive_num();
+
+// 工作线程函数
+static void* worker(void* arg);
+
+// 管理者线程函数
+static void* manager(void* arg);
+
+// 单个线程退出
+void threadExit();

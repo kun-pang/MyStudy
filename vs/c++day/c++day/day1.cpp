@@ -12,10 +12,10 @@
 */
 /*数据类型 
 *整型	短整型（short） 整型（int） 长整型（long） 长长整型（long long）
-*浮点型(实型)   单精度（float） 双精度（double）
+*浮点型(实型)   单精度（float） 双精度（double） long double
 *字符型 char 
 *转义字符型 \n \\ \t .....
-*字符串型  string char
+*字符串型  string(非基本类型) char
 *布尔类型 bool
 *
 */
