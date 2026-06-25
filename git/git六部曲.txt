@@ -1,0 +1,43 @@
+前置步骤（全新电脑/首次使用）
+1. 配置信息（全局配置，一台电脑只需配一次）
+   git config --global user.name "itcast"
+   git config --global user.email "hello@itcast.cn"  
+   （注意：英文双引号；邮箱可以不存在，只是用来标识是谁提交的）
+
+2. 生成并配置密钥（用于免密安全连接）
+   ssh-keygen -t rsa -b 4096 
+   （提示一路回车即可。需要把 ~/.ssh/id_rsa.pub 的内容复制到 GitHub 的 SSH Settings 中）
+	在.ssh中生成一个config文件，里面写入ssh链接信息
+	Host github.com
+    		HostName ssh.github.com
+    		Port 443
+    		User git
+    		IdentityFile ~/private_file/github_passwd/Debian_Code
+
+
+3. 初始化工作区（在你的项目目录下）
+   git init
+
+4. 链接远程仓库（让本地知道往哪里推代码）
+   git remote add origin git@github.com:kun-pang/Debian_StudyCode.git
+   （注意：远端名称通常约定俗成叫 origin）
+
+5. 统一主分支名并拉取（最关键的防错步！）
+   git branch -m main                      # 把本地默认的 master 改为 main
+   git pull origin main --allow-unrelated-histories  # 强制拉取远程已有的初始化文件（如README）
+   git branch --set-upstream-to=origin/main main    # 建立本地 main 和远程 main 的绑定关系
+
+
+
+日常正常提交流程
+1. 本地提交
+   git add .               # 把所有修改过的文件添加到暂存区
+   git commit -m "xxxx"    # 提交到本地仓库，xxxx 是你的提交日志
+
+2. 推送（Push）
+   git push origin main
+   （解释：把代码推送到名叫 origin 的远程仓库的 main 分支上）
+
+3. 拉取（Pull）
+   git pull origin main
+   （解释：在写代码前，先从远程仓库的 main 分支下载并合并别人的最新代码）
