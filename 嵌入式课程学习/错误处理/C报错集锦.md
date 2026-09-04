@@ -504,4 +504,200 @@ return 0;
   
   
   
+  ## 问题15：头文件环路问题
+  
+  ```c
+  #ifndef __HTTP_PROTOCOL_H__
+  #define __HTTP_PROTOCOL_H__
+  
+  #include <stdint.h>
+  #include "epoll.h"		// 与另外一个头文件形成环路
+  
+  #define PARSE_SUCCESS               0   // 解析成功
+  #define ERR_EMPTY_REQUEST          -1   // 空请求或缓冲区无数据
+  #define ERR_INVALID_METHOD         -2   // 不支持或不合法的请求方法 (非 GET/POST)
+  #define ERR_URL_NOT_FOUND          -3   // 找不到 URL 分隔符
+  #define ERR_URL_TOO_LONG           -4   // URL 长度超过接收缓冲区
+  #define ERR_VERSION_NOT_FOUND      -5   // 找不到 HTTP 版本号
+  #define ERR_POST_NO_CONTENT_LEN    -6   // POST 请求缺失 Content-Length 头部
+  #define ERR_POST_INVALID_LEN       -7   // Content-Length 的值不合法
+  #define ERR_BODY_NOT_FOUND         -8   // 找不到 HTTP 请求体 (未找到 \r\n\r\n)
+  #define ERR_BODY_INCOMPLETE        -9   // 请求体数据不完整 (实际接收长度小于 Content-Length)
+  
+  #define HPROTO_TYPE_TEXT  1   // 普通文件
+  #define HPROTO_TYPE_JSON  2   // JSON文件
+  
+  /* http协议解析 */
+  /* 请求头结构 */
+  typedef struct {
+      /* 请求行 */
+      char method[10];  // 请求类型，get / post
+      char url[256];    // 资源的原始路径
+      char path[128];   // 请求的文件名
+  
+      /* 请求头（POST专属） */
+      int  length;      // 正文长度
+  
+      /* 请求的正文 */
+      char *body;       // 正文内容
+  } HProto_request_t;
+  
+  /* 响应头结构 */
+  typedef struct {
+      int  status_code;       // 状态码：如 200, 404, 500
+      char status_msg[32];    // 状态描述
+  
+      char content_type[64];  // 返回给浏览器的格式：如 "application/json; charset=utf-8"
+      
+      char *body;             // 准备写回给浏览器的正文数据（如 HTML 或 JSON 字符串）
+      int   body_len;         // 正文的实际长度
+  } HProto_response_t;
+  
+  /**
+   * @brief 创建请求头
+   * 
+   * @return HProto_request_t* 成功,返回请求头;失败,返回NULL 
+   */
+  HProto_request_t *HProto_createReq();       
+  
+  /**
+   * @brief 销毁请求头
+   * 
+   * @param req 请求头结构体
+   */
+  void HProto_freeReq(HProto_request_t *req);
+  
+  /**
+   * @brief 创建响应头
+   * 
+   * @return HProto_response_t* 成功,返回响应头;失败,返回NULL 
+   */
+  HProto_response_t *HProto_createRes();
+  
+  /**
+   * @brief 销毁响应头
+   * 
+   * @param res 响应头结构体
+   */
+  void HProto_freeRes(HProto_response_t *res);
+  
+  /**
+   * @brief 解析客户端请求数据包
+   * 
+   * @param task 任务结构体
+   * @param req 请求头结构体，内部存放解析的数据
+   * @param recv_len 接收的数据长度
+   * @return int 成功,返回0;失败,返回<0（头文件上方查看具体对应的错误）
+   */
+  int HProto_parseReq(struct Epoll_task_s *task, int recv_len);
+  
+  /**
+   * @brief 构造响应头结构体的头部
+   * 
+   * @param res 响应头结构体的头部
+   * @param ret_code 解析请求头的错误码
+   * @param type 文件类型
+   */
+  void HProto_resHead(HProto_response_t *res, int ret_code, int type);
+  #endif
+  ```
+  
+  ```c
+  #ifndef __EPOLL_H__
+  #define __EPOLL_H__
+  
+  #include <stdint.h>
+  
+  #include "http_protocol.h"
+  #include "openssl/ssl.h"
+  
+  /* epoll 相关的处理 */
+  
+  typedef int (*fun_t)(void *arg);
+  
+  /* 任务结构体 */
+  struct Epoll_task_s{
+      int 	 			fd;			    // 该任务操作的IO对象对应文件描述符
+  	int      			epfd;		    // 该任务最终靠epoll对象进行 ADD DEL
+  	SSL                *ssl;			// 该任务绑定的SSL对象
+  	SSL_CTX            *ctx;			// 该任务绑定的SSL_CTX对象
+  	uint8_t            *data;			// 该任务维护的缓存区首地址
+  	int      			len;			// 该任务维护的缓存区的长度
+  	int      			pos;			// 该任务维护的缓存区的当前索引号
+  	HProto_request_t   *req;			// 该任务维护的请求头
+  	HProto_response_t  *res;			// 该任务维护的响应头
+  	fun_t               handler;		// 该任务一旦触发，应该执行哪个函数 
+  };
+  
+  /**
+   * @brief 初始化epoll文件描述符
+   * 
+   * @return int 成功,返回 非负fd ;失败,返回 -1
+   */
+  int Epoll_init();
+  
+  /**
+   * @brief 将fd添加到epoll的树结构中（上树操作）
+   * 
+   * @param task fd对应的任务体
+   * @param events 对应的数据
+   * @return int 成功,返回 0 ;失败,返回 -1
+   */
+  int Epoll_add(struct Epoll_task_s *task,uint32_t events);
+  
+  /**
+   * @brief 将fd从epoll的树结构中删除（下树操作）
+   * 
+   * @param task fd对应的任务体
+   * @return int 成功,返回 0 ;失败,返回 -1
+   */
+  int Epoll_del(struct Epoll_task_s *task);
+  
+  /**
+   * @brief 将fd设置成非阻塞模式，监听fd不需要设置
+   * 
+   * @param fd 需要设置的普通fd
+   */
+  void Epoll_setNonblocked(int fd);
+  
+  /**
+   * @brief 修改fd对应的epoll属性
+   * 
+   * @param task 任务结构体
+   * @param events 修改的属性
+   */
+  void Epoll_mod(struct Epoll_task_s *task, uint32_t events);
+  
+  #endif
+  ```
+  
+  问题描述：：展开 `http_protocol.h` $\rightarrow$ 去展开 `epoll.h` $\rightarrow$ 又回过头展开 `http_protocol.h`…… 从而陷入死循环，最终触发了你看到的编译报错。
+  
+  解决：如果一个头文件只需要知道某个结构体的**名字和它是个指针**（比如 `struct Epoll_task_s *task`），**根本不需要 `#include` 它的头文件**。你可以通过前置声明（Forward Declaration）来告诉编译器这个结构体的存在。
+  
+  ```c
+  #ifndef __HTTP_PROTOCOL_H__
+  #define __HTTP_PROTOCOL_H__
+  
+  #include <stdint.h>
+  // ❌ 删掉这行：#include "epoll.h"
+  
+  // ... 保持你的宏定义不变 ...
+  // ... 保持 HProto_request_t 和 HProto_response_t 结构体不变 ...
+  
+  // 💡 关键：前置声明。告诉编译器 struct Epoll_task_s 是一个结构体类型
+  struct Epoll_task_s; 
+  
+  // ... 保持前面的函数声明不变 ...
+  
+  /**
+   * @brief 解析客户端请求数据包
+   */
+  int HProto_parseReq(struct Epoll_task_s *task, int recv_len); // 此时编译器看到指针就不会报错了
+  
+  void HProto_resHead(HProto_response_t *res, int ret_code, int type);
+  
+  #endif
+  ```
+  
   
