@@ -2962,3 +2962,426 @@ int main() {
 	- 追求极致的**单点高频查找/插入**效率，且数据量较大：优先选择 `std::unordered_map`。
 
 	- 对内存占用极为敏感，或需要防范恶意构造特定数据导致哈希碰撞攻击（Hash DoS）：选择 `std::map`。
+
+
+
+
+
+# 智能指针
+
+## 内存安全问题与解决方案
+
+###  内存泄露 (Memory Leak)
+
+- **定义**：在堆空间（Heap）申请了内存，但在使用完毕后没有显式释放，导致可用内存持续减少。
+- **主要原因**：
+	- 忘记编写 `free()` 或 `delete`。
+	- 程序在中间步骤发生异常或分支提前返回（如 `return -1;`），绕过了末尾的释放代码。
+- **解决与检测手段**：
+	- **代码结构优化**：遵循 RAII 思想，避免手动管理内存。
+	- **工具检测**：使用 **Valgrind**, AddressSanitizer (ASan), Visual Studio Memory Leak Detector 等工具。
+	- **现代 C++ 解决方案**：使用**智能指针**封装内存管理。
+
+### 内存越界 (Buffer Overflow / Out-of-Bounds Access)
+
+- **定义**：越界访问了未授权的内存区域（如读取或写入超过数组或动态缓冲区范围的地址）。
+- **根源剖析**：C/C++ 原生指针只有首地址，没有内置边界标识或长度信息。
+	- **字符串越界**：缺少 `\0` (ASCII 0) 结束符。
+	- **非字符缓冲区越界**：未严格校验数据元素的个数/字节数。
+- **通用解决方案**：
+	- 显式传递区间：同时传递**空间首地址**和 `size_t` 类型的**空间大小/个数**。
+	- 使用 C++ 安全容器：如 `std::vector` (配合 `at()` 进行边界检查), `std::span` (C++20), `std::string_view`。
+	- **魔数/哨兵机制**：在调试模式下利用特定魔数标记边界（如 `0xFE`, `0xDEADBEEF`）协助排查调试。
+
+## 指针函数 vs 函数指针
+
+### 指针函数 (Pointer to Function Return Type)
+
+- **定义**：返回值是一个指针/地址的函数。
+
+	```C++
+	Type* func(int arg);
+	```
+
+- **返回值内存区域分类与规范**：
+
+	- **指向栈空间（Stack）**：**绝对禁止！** 栈内存在函数返回后被销毁，返回局部变量地址会导致野指针与未定义行为（UB）。
+	- **指向堆空间（Heap）**：
+		- **规范**：必须配合严格的内存管理机制。建议采用成对的接口设计（如 `fopen` / `fclose`，`malloc` / `free`），或者直接返回**智能指针**。
+	- **指向数据区空间（Data Segment / Static Area）**：
+		- **特点**：生命周期与程序一致（静态变量/字面量），无需手动释放（如 `char *inet_ntoa(...)`）。
+		- **并发隐患**：这类函数返回的静态空间属于**临界区**。在多线程环境下访问会导致数据竞争（Data Race），属于**线程不安全函数**（通常需使用 `_r` 后缀的可重入版本，如 `inet_ntoa_r`）。
+
+### 2. 函数指针 (Function Pointer)
+
+- **定义**：存储函数入口首地址的指针变量。
+
+	```C++
+	ReturnType (*func_ptr)(ParamTypes...);
+	```
+
+- **核心应用场景**：
+
+	- **消除分支控制**：利用函数指针数组/映射表（如转移表）替代复杂的 `switch` 或 `if-else` 结构。
+	- **回调机制 (Callback)**：系统异步通知与解耦（如 Linux 信号处理 `signal(SIGINT, xxx_handler)`）。
+	- **嵌入式向量表**：如 Cortex-M NVIC 中断向量表中的函数首地址跳转。
+	- **事件驱动与框架**：
+		- Linux 网络编程中的 `epoll` 事件分发。
+		- Qt 框架中的**信号与槽 (Signals and Slots)** 机制。
+
+## RAII 思想 (Resource Acquisition Is Initialization)
+
+### 核心理念
+
+- **概念**：资源获取即初始化。将资源的生命周期绑定到对象的生命周期。
+- **执行机制**：
+	- 在**构造函数**中申请资源。（可以在构造函数外new，也可以在构造函数内new，但最后new的资源应该放入对象中，即对象死亡能正确释放new处理的资源）
+	- 在**析构函数**中释放资源。
+- **底层原理（编译器与汇编层面）**：
+	- C++ 编译器保证：只要对象定义在**栈**上，当程序离开作用域（如函数返回、抛出异常）导致出栈时，**编译器会自动触发析构函数**。
+	- 汇编层面对应栈帧清理与寄存器恢复（如 `PUSH {r4, r5}` / `POP {r4, r5}` 及 `BL` 跳转）。
+
+### 2. 传统写法 vs RAII 模式对比
+
+- **传统写法（易产生泄露）**：
+
+	```C++
+	FILE *fp = fopen("data.txt", "r");
+	if (do_something()) {
+	    // 若忘记写 fclose(fp); 导致文件句柄/内存泄漏
+	    return -1; 
+	}
+	fclose(fp);
+	```
+
+- **RAII 模式（安全自动管理）**：
+
+	```C++
+	class FileHandler {
+	public:
+	    FileHandler(const char* path, const char* mode) { fp = fopen(path, mode); }
+	    ~FileHandler() { if (fp) fclose(fp); }
+	    FILE* get() const { return fp; }
+	private:
+	    FILE* fp;
+	};
+	
+	// 使用：即使中间逻辑提前 return，析构函数也会保证关闭文件
+	void process() {
+	    FileHandler file("data.txt", "r");
+	    if (do_something()) return; // 安全退出，自动调用 ~FileHandler()
+	}
+	```
+
+## C++ 智能指针深度解析
+
+智能指针是 RAII 思想在堆内存管理上的具体实现，能高效解决内存泄露问题。
+
+> **核心原则**：一旦将原生指针交给智能指针管理，**切勿再手动进行 `delete` 或 `free`**，否则会导致 **Double Free** 错误。
+
+### `std::unique_ptr` （独占式智能指针）
+
+- **特点**：
+
+	- 具备**唯一所有权**，整个系统中同一时刻只能有一个 `unique_ptr` 指向该堆空间。
+	- **零开销抽象**：内部仅维护一个原生指针变量，内存空间占用与裸指针相同，开销最小。
+
+- **禁止拷贝，仅支持移动**：
+
+	- 内部显式禁用/删除了拷贝构造与拷贝赋值运算符：
+
+		```C++
+		unique_ptr(const unique_ptr&) = delete;
+		unique_ptr& operator=(const unique_ptr&) = delete;
+		```
+
+	- 所有权转移必须显式使用 `std::move()`：
+
+		```C++
+		std::unique_ptr<int> p1 = std::make_unique<int>(42);
+		std::unique_ptr<int> p2 = std::move(p1); // p1 变为空指针，所有权移交至 p2
+		```
+
+- **自定义删除器 (Custom Deleter)**：
+
+	- 模板参数的第二个位置可以传入仿函数/函数类型，用于定制非 `delete` 行为（如管理文件句柄、C 接口内存等）：
+
+		```C++
+		// 函数类型
+		auto file_deleter = [](FILE* fp) { if (fp) fclose(fp); };
+		std::unique_ptr<FILE, decltype(file_deleter)> filePtr(fopen("test.txt", "r"), file_deleter);
+		
+		// 仿函数类型
+		```
+
+### `std::shared_ptr` （共享式智能指针）
+
+- **特点**：
+	- 多个 `shared_ptr` 可以共享同一块堆空间。
+	- **引用计数器 (Reference Count)**：内部维护一个控制块（Control Block）。
+		- 每当发生拷贝/赋值，引用计数 $+1$。
+		- 每当对象析构或被重置，引用计数 $-1$。
+		- 当引用计数降为 $0$ 时，自动调用删除器释放资源。
+- **推荐创建方式**：
+	- 优先使用 `std::make_shared<T>()`。相比 `new`，它能将控制块与对象内存一次性分配，减少内存碎片并提升效率。
+
+#### 【高频面试考点】循环引用 (Circular Reference) 与 `std::weak_ptr`
+
+- **问题成因**：
+
+	两个对象内部互相持有对方的 `shared_ptr`，导致彼此的引用计数始终为 $1$，无法降至 $0$，进而引发严重的内存泄露。
+
+	```C++
+	NodeA (shared_ptr)  --->  NodeB
+	NodeA  <--- (shared_ptr)  NodeB
+	```
+
+- **解决方案：`std::weak_ptr`**：
+
+	- 将其中一端的指针修改为 `std::weak_ptr`。
+	- `weak_ptr` 扮演**弱引用/标识**角色：只观测资源，**不增加强引用计数**。
+	- 常见场景：双向链表的 `next` / `prev` 节点指向、观察者模式等。
+
+### 3. 智能指针使用技巧总结与常见陷阱
+
+1. **所有权转移与传递**：
+
+	- 传递 `unique_ptr` 时，使用 `std::move` 将老空间所有权搬移到新空间。
+	- 如果函数内用完后主调函数还需要继续使用，可直接传递**引用**，或通过函数返回值返回 `unique_ptr` / `std::move`。
+
+2. **类型推导**：
+
+	- 结合 `auto` 可以显著简化智能指针的定义代码：
+
+		```C++
+		auto ptr = std::make_shared<MyClass>();
+		```
+
+
+
+```c++
+#include <iostream>
+#include <memory>
+#include <windows.h>
+
+// 测试辅助类，构造与析构时打印日志，方便观察内存释放时机
+class TestNode {
+public:
+    std::string name;
+    explicit TestNode(std::string name) : name(std::move(name)) {
+        std::cout << "[构造] TestNode: " << this->name << std::endl;
+    }
+    ~TestNode() {
+        std::cout << "[析构] TestNode: " << this->name << std::endl;
+    }
+    void doSomething() const {
+        std::cout << "Node [" << name << "] 正在执行操作..." << std::endl;
+    }
+};
+
+/**
+ * 知识点 1：std::unique_ptr 基本用法与 RAII 自动释放
+ * 测试目的：验证 unique_ptr 在作用域结束时自动调用析构函数，防止内存泄露。
+ */
+void test_unique_ptr_basic() {
+    std::cout << "\n=== Test 1: unique_ptr 基本用法 ===" << std::endl;
+    {
+        // 使用 std::make_unique 创建独占指针（C++14 推荐）
+        std::unique_ptr<TestNode> ptr1 = std::make_unique<TestNode>("Node_Unique_1");
+        ptr1->doSomething();
+    } // 出了内部作用域，ptr1 被自动销毁，释放 Node_Unique_1
+    std::cout << "作用域已结束，观察上面是否触发了析构函数" << std::endl;
+}
+
+/**
+ * 知识点 2：std::unique_ptr 独占性与所有权转移 (std::move)
+ * 测试目的：验证 unique_ptr 不能拷贝，只能通过 std::move 进行所有权转移。
+ */
+void test_unique_ptr_move() {
+    std::cout << "\n=== Test 2: unique_ptr 所有权转移 ===" << std::endl;
+
+    std::unique_ptr<TestNode> ptr1 = std::make_unique<TestNode>("Node_Move");
+
+    // std::unique_ptr<TestNode> ptr2 = ptr1; // ❌ 编译报错！禁用拷贝构造函数 (=delete)
+
+    // 正确做法：使用 std::move 转移所有权
+    std::unique_ptr<TestNode> ptr2 = std::move(ptr1);
+
+    if (ptr1 == nullptr) {
+        std::cout << "ptr1 已变为空指针 (nullptr)" << std::endl;
+    }
+    if (ptr2 != nullptr) {
+        std::cout << "所有权已成功转移给 ptr2: ";
+        ptr2->doSomething();
+    }
+}
+
+/**
+ * 知识点 3：std::unique_ptr 自定义删除器 (Custom Deleter)
+ * 测试目的：验证 unique_ptr 处理非 delete 资源（如 FILE*）的RAII封装。
+ */
+struct MyDeleter{
+    void operator()(int* p) const {
+        std::cout << "[MyDeleter] 正在释放动态内存，地址: " << p << std::endl;
+        delete p;
+    }
+};
+
+void test_unique_ptr_custom_deleter() {
+    std::cout << "\n=== Test 3: unique_ptr 自定义删除器 ===" << std::endl;
+
+    // 自定义 Lambda 删除器，管理 FILE* 指针
+    auto fileDeleter = [](FILE* fp) {
+        if (fp) {
+            std::cout << "[自定义删除器] 自动调用 fclose() 关闭文件" << std::endl;
+            fclose(fp);
+        }
+    };
+
+    {
+        // 注意：自定义删除器会成为 unique_ptr 模板类型的一部分
+        std::unique_ptr<FILE, decltype(fileDeleter)> filePtr(fopen("test_temp.txt", "w"), fileDeleter);
+
+        if (filePtr) {
+            std::cout << "文件打开成功，准备写入数据..." << std::endl;
+            fputs("Hello Smart Pointer!\n", filePtr.get());
+        }
+    } // 出了作用域，自动触发 fileDeleter 关闭文件
+
+    {
+        std::unique_ptr<int, MyDeleter> ptr(new int(42));
+
+        std::cout << "值: " << *ptr << std::endl;
+        // 出作用域时自动调用 MyDeleter::operator()
+    }
+}
+
+/**
+ * 知识点 4：std::shared_ptr 共享指针与引用计数 (Reference Count)
+ * 测试目的：观察多指针共享同一内存时，引用计数的增减规律。
+ */
+void test_shared_ptr_basic() {
+    std::cout << "\n=== Test 4: shared_ptr 与引用计数 ===" << std::endl;
+
+    // 推荐使用 std::make_shared，性能更高（控制块与对象内存一次性分配）
+    std::shared_ptr<TestNode> p1 = std::make_shared<TestNode>("Node_Shared");
+    std::cout << "p1 创建后，引用计数 (use_count): " << p1.use_count() << std::endl;
+
+    {
+        std::shared_ptr<TestNode> p2 = p1; // 拷贝赋值，计数 +1
+        std::cout << "p2 拷贝 p1 后，引用计数: " << p1.use_count() << std::endl;
+
+        std::shared_ptr<TestNode> p3 = p1; // 拷贝赋值，计数 +1
+        std::cout << "p3 拷贝 p1 后，引用计数: " << p1.use_count() << std::endl;
+    } // p2, p3 出作用域析构，计数 -2
+
+    std::cout << "p2, p3 离开作用域后，引用计数: " << p1.use_count() << std::endl;
+} // p1 出作用域，计数降为 0，真正触发 Node_Shared 析构
+
+/**
+ * 知识点 5：循环引用导致内存泄露（反面教材）
+ * 测试目的：模拟 A 持有 B 的 shared_ptr，B 也持有 A 的 shared_ptr 导致的内存泄露。
+ */
+struct B; // 前向声明
+
+struct A {
+    std::shared_ptr<B> b_ptr;
+    ~A() { std::cout << "[析构] A 销毁" << std::endl; }
+};
+
+struct B {
+    std::shared_ptr<A> a_ptr;
+    ~B() { std::cout << "[析构] B 销毁" << std::endl; }
+};
+
+void test_shared_ptr_circular_ref() {
+    std::cout << "\n=== Test 5: shared_ptr 循环引用 (内存泄露演示) ===" << std::endl;
+    {
+        auto a = std::make_shared<A>();
+        auto b = std::make_shared<B>();
+
+        a->b_ptr = b; // a 引用 b
+        b->a_ptr = a; // b 引用 a，形成闭环！
+
+        std::cout << "a 的引用计数: " << a.use_count() << std::endl; // 输出 2
+        std::cout << "b 的引用计数: " << b.use_count() << std::endl; // 输出 2
+    }
+    std::cout << "警告：作用域已结束，但由于循环引用，A 和 B 均未被析构 (引发内存泄露)！" << std::endl;
+}
+
+/**
+ * 知识点 6：用 std::weak_ptr 解决循环引用
+ * 测试目的：验证使用 weak_ptr（不增加强引用计数）打破循环引用。
+ */
+struct BW; // 前向声明
+
+struct AW {
+    std::shared_ptr<BW> b_ptr;
+    ~AW() { std::cout << "[析构] AW 销毁" << std::endl; }
+};
+
+struct BW {
+    std::weak_ptr<AW> a_ptr; // ⚠️ 将 shared_ptr 改为 weak_ptr，消除循环引用
+    ~BW() { std::cout << "[析构] BW 销毁" << std::endl; }
+};
+
+void test_weak_ptr_solve_circular() {
+    std::cout << "\n=== Test 6: weak_ptr 解决循环引用 ===" << std::endl;
+    {
+        auto a = std::make_shared<AW>();
+        auto b = std::make_shared<BW>();
+
+        a->b_ptr = b;
+        b->a_ptr = a; // weak_ptr 赋值，不会增加 a 的强引用计数
+
+        std::cout << "a 的引用计数: " << a.use_count() << std::endl; // 输出 1
+        std::cout << "b 的引用计数: " << b.use_count() << std::endl; // 输出 1
+    }
+    std::cout << "作用域结束，观察 AW 和 BW 是否正常析构。" << std::endl;
+}
+
+/**
+ * 知识点 7：std::weak_ptr 的安全访问 (lock 与 expired)
+ * 测试目的：演示 weak_ptr 如何检查资源是否存活并安全地提升为 shared_ptr 访问。
+ */
+void test_weak_ptr_lock() {
+    std::cout << "\n=== Test 7: weak_ptr 安全访问 (lock / expired) ===" << std::endl;
+
+    std::weak_ptr<TestNode> w_ptr;
+
+    {
+        auto s_ptr = std::make_shared<TestNode>("Node_Weak_Lock");
+        w_ptr = s_ptr; // 观测 s_ptr
+
+        // 尝试用 lock() 获取强引用
+        if (auto locked_ptr = w_ptr.lock()) {
+            std::cout << "资源存活中，提升成功: ";
+            locked_ptr->doSomething();
+        }
+    } // s_ptr 出了作用域，Node_Weak_Lock 被销毁
+
+    // 此时资源已经被销毁，检查 expired
+    if (w_ptr.expired()) {
+        std::cout << "w_ptr 观察的资源已被销毁 (expired = true)" << std::endl;
+    }
+
+    if (auto locked_ptr = w_ptr.lock()) {
+        locked_ptr->doSomething();
+    } else {
+        std::cout << "w_ptr.lock() 返回 nullptr，避免了访问野指针造成的崩溃/内存越界！" << std::endl;
+    }
+}
+void test08(){
+    SetConsoleOutputCP(65001);
+    test_unique_ptr_basic();
+    test_unique_ptr_move();
+    test_unique_ptr_custom_deleter();
+
+    test_shared_ptr_basic();
+    test_shared_ptr_circular_ref();
+
+    test_weak_ptr_solve_circular();
+    test_weak_ptr_lock();
+}
+```
+

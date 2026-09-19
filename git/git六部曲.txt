@@ -24,6 +24,20 @@
 
 5. 统一主分支名并拉取（最关键的防错步！）
    git branch -m main                      # 把本地默认的 master 改为 main
+
+# 新仓库
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:kun-pang/video_transfer.git
+git push -u origin main
+
+# 老仓库
+git remote add origin git@github.com:kun-pang/video_transfer.git
+git branch -M main
+git push -u origin main
+	
    git pull origin main --allow-unrelated-histories  # 强制拉取远程已有的初始化文件（如README）
    git branch --set-upstream-to=origin/main main    # 建立本地 main 和远程 main 的绑定关系
 

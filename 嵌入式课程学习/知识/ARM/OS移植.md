@@ -6344,36 +6344,39 @@ MACHINE_END
 5. 生成Uboot镜像文件
 
 
-	```c
-	// 确认bootloader、内核镜像、设备树、文件系统，启动时防止内存的哪些地址上，并告知启动方式，和根设备
-	// 修改uboot对应的include/configs/xxx.h配置文件
-	
-	#define CONFIG_EXTRA_ENV_SETTINGS \
-		"bootdelay=2\0" \
-		"args_sd_boot=setenv bootargs console=ttymxc0,115200 root=/dev/mmcblk0p2 rw rootfstype=ext4 init=/linuxrc\0" \
-		"bootcmd_mmcx=load mmc 0:1 0x80800000 zImage; load mmc 0:1 0x83000000 imx6ull-mmc-npi.dtb; run args_sd_boot; bootz 0x80800000 - 0x83000000;\0" \
-		"bootcmd=run bootcmd_mmcx\0" \
-		
-	// 同时修改include/config_distro_bootcmd.h，启动时，执行的启动方式
-	// 最后的位置进行修改
-	#ifndef CONFIG_BOOTCOMMAND
-	#define CONFIG_BOOTCOMMAND "run bootcmd_mmcx"   // 修改成自己的启动方式
-	// #define CONFIG_BOOTCOMMAND "run distro_bootcmd"   
-	#endif
-	```
+```c
+// 确认bootloader、内核镜像、设备树、文件系统，启动时防止内存的哪些地址上，并告知启动方式，和根设备
+// 修改uboot对应的include/configs/xxx.h配置文件
 
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootdelay=2\0" \
+	"args_sd_boot=setenv bootargs console=ttymxc0,115200 root=/dev/mmcblk0p2 rw rootfstype=ext4 init=/linuxrc\0" \
+	"bootcmd_mmcx=load mmc 0:1 0x80800000 zImage; load mmc 0:1 0x83000000 imx6ull-mmc-npi.dtb; run args_sd_boot; bootz 0x80800000 - 0x83000000;\0" \
+	"bootcmd=run bootcmd_mmcx\0" \
 	
+// 同时修改include/config_distro_bootcmd.h，启动时，执行的启动方式
+// 最后的位置进行修改
+#ifndef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND "run bootcmd_mmcx"   // 修改成自己的启动方式
+// #define CONFIG_BOOTCOMMAND "run distro_bootcmd"   
+#endif
 
-	```bash
-	# 生成配置单（使用官方配置，慎重使用make menuconfig）
-	make mx6ull_fire_mmc_defconfig
-	# 生成进行文件
-	make -j$(nproc)
-	# 将u-boot-dtb.imx拷贝到临时目录
-	cp u-boot-dtb.imx ../t/
-	```
+```
 
-	
+
+​	
+
+```c
+# 生成配置单（使用官方配置，慎重使用make menuconfig）
+make mx6ull_fire_mmc_defconfig
+# 生成进行文件
+make -j$(nproc)
+# 将u-boot-dtb.imx拷贝到临时目录
+cp u-boot-dtb.imx ../t/
+```
+
+
+​	
 
 6. 裁剪内核
 
